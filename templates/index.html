@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScholarSphere</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* CSS for positioning the user input at the bottom */
+        body {
+            margin-bottom: 70px; /* Adjust height of input form */
+            padding-top: 40px; /* Add padding for the fixed heading */
+        }
+        #heading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 9999; /* Ensure it's above other elements */
+            padding: 10px; /* Adjust as needed */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Optional: add shadow for better visibility */
+            text-align: center; /* Center align the text */
+        }
+        #user-input-form {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 9999; /* Ensure it's above other elements */
+            background-color: #fff; /* Change to match your background color */
+            padding: 10px; /* Adjust as needed */
+        }
+        #chat-box {
+            max-height: calc(100vh - 200px); /* Adjust as needed */
+            overflow-y: scroll;
+        }
+        .throbber {
+            display: none; /* Hide throbber by default */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+    <div id="heading" class="bg-light bg-gradient">
+        <h1>ScholarSphere</h1>
+    </div>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-12">
+                <div id="chat-box"></div>
+            </div>
+        </div>
+    </div>
+
+    <form id="user-input-form">
+        <div class="input-group">
+            <input type="text" id="user-input" class="form-control" placeholder="Type your message...">
+            <div class="input-group-append">
+                <button type="submit" class="btn btn-primary">Send</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Throbber markup -->
+    <div id="throbber" class="throbber">
+        <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies (jQuery and Popper.js) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        $(document).ready(function(){
+            // Initialize the carousel
+            $('.carousel').carousel();
+        });
+    </script>
+
+    <script>
+        $(document).ready(function(){
+            $('#user-input-form').submit(function(event){
+                event.preventDefault();
+                var userInput = $('#user-input').val();
+                $('#chat-box').append('<div><p class="font-weight-bold">You:</p> ' + userInput + '</div>');
+                $('#user-input').val('');
+                
+                // Show throbber
+                $('#throbber').show();
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/process',
+                    data: {'user_input': userInput},
+                    success: function(response){
+                        $('#chat-box').append('<div><p class="text-uppercase font-weight-bold">ChatGPT:</p> ' + response + '</div>');
+                        $("#chat-box").scrollTop($("#chat-box")[0].scrollHeight);
+                    },
+                    complete: function() {
+                        // Hide throbber when response is received
+                        $('#throbber').hide();
+                    }
+                });
+            });
+
+            // Automatically scroll to the bottom of chat-box
+            $('#chat-box').on('DOMNodeInserted', function(){
+                $(this).scrollTop($(this)[0].scrollHeight);
+            });
+        });
+    </script>
+</body>
+</html>
